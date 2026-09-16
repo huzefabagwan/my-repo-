@@ -247,7 +247,51 @@ class ApiService {
     return null
   }
 
+  // ============================================================
+  // CONSTRAINT ENGINE APIs (Phase 2A)
+  // ============================================================
+
+  async checkConstraints(payload) {
+    if (this.isBackendOnline) {
+      try {
+        return await this._fetch('/api/constraints/check', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        })
+      } catch (e) {
+        console.warn('[API] Constraint check failed:', e)
+      }
+    }
+    return null
+  }
+
+  async checkCompatibility(payload) {
+    if (this.isBackendOnline) {
+      try {
+        return await this._fetch('/api/constraints/compatibility', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        })
+      } catch (e) {}
+    }
+    return null
+  }
+
+  async getCandidateWindows(taskId, corridor = null) {
+    if (this.isBackendOnline) {
+      try {
+        const url = corridor
+          ? `/api/constraints/candidate-windows/${taskId}?corridor=${corridor}`
+          : `/api/constraints/candidate-windows/${taskId}`
+        const res = await this._fetch(url)
+        if (res.success && res.data) return res.data
+      } catch (e) {}
+    }
+    return []
+  }
+
 }
 
 const API = new ApiService()
 export default API
+
