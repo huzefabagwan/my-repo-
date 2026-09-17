@@ -1,69 +1,101 @@
-import React from 'react'
-import { NavLink } from 'react-router-dom'
+import React, { useState } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
 import {
-  LayoutDashboard, Network, Wrench, Brain, CalendarRange,
-  AlertTriangle, CalendarDays, CalendarClock, FileText, Train, Activity
+  LayoutDashboard, Radio, Wrench, CalendarRange, Brain,
+  Zap, FlaskConical, CalendarDays, Map, BarChart3,
+  CheckSquare, FileText, ClipboardList, Settings, Train,
+  ChevronLeft, ChevronRight
 } from 'lucide-react'
 
-const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/network', icon: Network, label: 'Live Network' },
-  { to: '#', icon: Wrench, label: 'Maintenance', disabled: true },
-  { to: '/priority-center', icon: Brain, label: 'AI Priority Center' },
-  { to: '/block-planning', icon: CalendarRange, label: 'Block Planning' },
-  { to: '/conflicts', icon: AlertTriangle, label: 'Conflicts' },
-  { to: '/planning?view=week', icon: CalendarDays, label: 'Weekly Plan' },
-  { to: '/planning?view=month', icon: CalendarClock, label: 'Monthly Plan' },
-  { to: '/monitoring', icon: Activity, label: 'Live Monitoring' },
-  { to: '/reports', icon: FileText, label: 'Reports' },
+const NAV_ITEMS = [
+  { to: '/', icon: LayoutDashboard, label: 'Dashboard', exact: true },
+  { to: '/live-operations', icon: Radio, label: 'Live Operations' },
+  { to: '/maintenance-tasks', icon: Wrench, label: 'Maintenance Tasks' },
+  { to: '/block-planner', icon: CalendarRange, label: 'Block Planner' },
+  { to: '/ai-recommendations', icon: Brain, label: 'AI Recommendations' },
+  { to: '/events', icon: Zap, label: 'Real-Time Events' },
+  { to: '/simulation', icon: FlaskConical, label: 'What-If Simulation' },
+  { to: '/weekly-planning', icon: CalendarDays, label: 'Weekly Planning' },
+  { to: '/gis-map', icon: Map, label: 'GIS Map' },
+  { to: '/reports', icon: BarChart3, label: 'Analytics & Reports' },
+  { to: '/approvals', icon: CheckSquare, label: 'Approvals' },
+  { to: '/documents', icon: FileText, label: 'Documents' },
+  { to: '/audit-logs', icon: ClipboardList, label: 'Audit Logs' },
+  { to: '/administration', icon: Settings, label: 'Administration' },
 ]
 
 export default function Sidebar() {
+  const [collapsed, setCollapsed] = useState(false)
+  const location = useLocation()
+
   return (
-    <aside className="w-16 bg-white border-r border-gray-200 flex flex-col py-4 items-center shrink-0 shadow-sm z-50">
+    <aside
+      className="flex flex-col shrink-0 transition-all duration-200 z-40 relative"
+      style={{ width: collapsed ? 56 : 220, background: '#1A2332', minHeight: '100vh' }}
+    >
       {/* Logo */}
-      <div className="flex flex-col items-center gap-1 mb-8">
-        <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center shadow-md shadow-blue-500/20">
-          <Train size={24} className="text-white" />
+      <div className="flex items-center gap-2.5 px-3 py-4 border-b" style={{ borderColor: '#243044' }}>
+        <div className="w-8 h-8 rounded flex items-center justify-center shrink-0" style={{ background: '#C0392B' }}>
+          <Train size={16} className="text-white" />
         </div>
+        {!collapsed && (
+          <div>
+            <div className="text-white font-bold text-sm leading-none tracking-tight">RAILOPT</div>
+            <div className="text-[9px] mt-0.5" style={{ color: '#64748B' }}>Indian Railways</div>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex flex-col gap-3 w-full px-2 flex-1 overflow-y-auto">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.label}
-            to={item.to}
-            className={({ isActive }) =>
-              `relative group flex items-center justify-center w-12 h-12 rounded-lg transition-all mx-auto ${
-                item.disabled
-                  ? 'text-gray-300 cursor-not-allowed pointer-events-none'
-                  : isActive
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
-              }`
-            }
-          >
-            <item.icon size={20} />
-            
-            {/* Tooltip */}
-            <span className="absolute left-14 opacity-0 group-hover:opacity-100 bg-gray-900 text-white text-xs font-medium rounded-md px-2 py-1 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">
-              {item.label}
-            </span>
-
-            {/* Optional badge */}
-            {item.label === 'Conflicts' && (
-              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full shadow-sm"></span>
-            )}
-          </NavLink>
-        ))}
+      <nav className="flex-1 overflow-y-auto py-2 scrollbar-thin">
+        {NAV_ITEMS.map(item => {
+          const isActive = item.exact
+            ? location.pathname === item.to
+            : location.pathname.startsWith(item.to)
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              title={collapsed ? item.label : undefined}
+              className="flex items-center gap-2.5 mx-1.5 my-0.5 px-2.5 py-2 rounded text-xs font-medium transition-colors group relative"
+              style={{
+                color: isActive ? '#fff' : '#94A3B8',
+                background: isActive ? '#C0392B' : 'transparent',
+              }}
+              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#243044' }}
+              onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
+            >
+              <item.icon size={16} className="shrink-0" />
+              {!collapsed && <span className="truncate">{item.label}</span>}
+              {collapsed && (
+                <div className="absolute left-14 bg-slate-800 text-white text-xs rounded px-2 py-1 pointer-events-none opacity-0 group-hover:opacity-100 whitespace-nowrap z-50 shadow-lg transition-opacity">
+                  {item.label}
+                </div>
+              )}
+            </NavLink>
+          )
+        })}
       </nav>
 
-      {/* Footer */}
-      <div className="mt-auto pt-6 border-t border-gray-100 w-full flex justify-center">
-        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center border border-blue-100">
-          <span className="text-blue-700 font-bold text-xs">IR</span>
-        </div>
+      {/* Demo mode + collapse */}
+      <div className="shrink-0 border-t py-2 px-2" style={{ borderColor: '#243044' }}>
+        {!collapsed && (
+          <div className="flex items-center justify-center mb-2">
+            <span className="text-[9px] font-bold tracking-widest uppercase px-2 py-1 rounded" style={{ background: '#D97706', color: '#fff' }}>
+              ⬤ DEMO MODE
+            </span>
+          </div>
+        )}
+        <button
+          onClick={() => setCollapsed(c => !c)}
+          className="w-full flex items-center justify-center py-1.5 rounded text-xs transition-colors"
+          style={{ color: '#64748B' }}
+          onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+          onMouseLeave={e => e.currentTarget.style.color = '#64748B'}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? <ChevronRight size={14} /> : <><ChevronLeft size={14} /><span className="ml-1">Collapse</span></>}
+        </button>
       </div>
     </aside>
   )
